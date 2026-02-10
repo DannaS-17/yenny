@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Semanal</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginSection" class="login-section">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>📅 Mi Calendario Semanal</h1>
+                <p>Organiza tus tareas, trabajos y exámenes</p>
+            </div>
+
+            <div class="login-forms">
+                <!-- Formulario de Inicio de Sesión -->
+                <div class="login-form" id="loginForm">
+                    <h2>Iniciar Sesión</h2>
+                    <div class="form-group">
+                        <input type="text" id="loginUsername" placeholder="Usuario" required>
+                        <input type="password" id="loginPassword" placeholder="Contraseña" required>
+                        <button class="btn-login" id="loginBtn">Ingresar</button>
+                    </div>
+                    <p class="form-toggle">¿No tienes cuenta? <a href="#" onclick="toggleLoginForm(event)">Regístrate</a></p>
+                </div>
+
+                <!-- Formulario de Registro -->
+                <div class="register-form hidden" id="registerForm">
+                    <h2>Crear Nueva Cuenta</h2>
+                    <div class="form-group">
+                        <input type="text" id="registerName" placeholder="Tu nombre" required>
+                        <input type="text" id="registerUsername" placeholder="Usuario" required>
+                        <input type="email" id="registerEmail" placeholder="Correo electrónico" required>
+                        <input type="password" id="registerPassword" placeholder="Contraseña" required>
+                        <input type="password" id="registerConfirmPassword" placeholder="Confirmar contraseña" required>
+                        <button class="btn-register" id="registerBtn">Crear Cuenta</button>
+                    </div>
+                    <p class="form-toggle">¿Ya tienes cuenta? <a href="#" onclick="toggleLoginForm(event)">Inicia sesión</a></p>
+                </div>
+            </div>
+
+            <div class="login-info">
+                <p>Usa credenciales de prueba: usuario: <strong>demo</strong> | contraseña: <strong>demo</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección del Calendario -->
+    <div id="calendarSection" class="calendar-section hidden">
+        <div class="container">
+        <header class="header">
+            <div class="header-top">
+                <h1>📅 Mi Calendario Semanal</h1>
+                <div class="user-info">
+                    <span id="welcomeUser"></span>
+                    <button class="btn-logout" id="logoutBtn">Cerrar Sesión</button>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-nav" id="prevWeek">← Semana Anterior</button>
+                <span class="week-info" id="weekInfo"></span>
+                <button class="btn-nav" id="nextWeek">Próxima Semana →</button>
+            </div>
+        </header>
+
+        <div class="calendar-container">
+            <div class="add-task-section">
+                <h2>Agregar Tarea</h2>
+                <div class="form-group">
+                    <input type="text" id="taskTitle" placeholder="Título de la tarea">
+                    <select id="taskDay">
+                        <option value="">Selecciona un día</option>
+                    </select>
+                    <select id="taskHour">
+                        <option value="">Selecciona hora</option>
+                    </select>
+                    <select id="taskType">
+                        <option value="tarea">Tarea</option>
+                        <option value="trabajo">Trabajo</option>
+                        <option value="examen">Examen</option>
+                        <option value="evento">Evento</option>
+                    </select>
+                    <textarea id="taskDescription" placeholder="Descripción (opcional)"></textarea>
+                    <button class="btn-add" id="addTaskBtn">Agregar Tarea</button>
+                </div>
+            </div>
+
+            <div class="calendar">
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar tarea -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Editar Tarea</h2>
+            <div class="form-group">
+                <input type="text" id="editTaskTitle" placeholder="Título">
+                <textarea id="editTaskDescription" placeholder="Descripción"></textarea>
+                <select id="editTaskType">
+                    <option value="tarea">Tarea</option>
+                    <option value="trabajo">Trabajo</option>
+                    <option value="examen">Examen</option>
+                    <option value="evento">Evento</option>
+                </select>
+                <button class="btn-save" id="saveEditBtn">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

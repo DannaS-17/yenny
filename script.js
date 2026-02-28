@@ -1,29 +1,53 @@
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDeyEQ8dc6pBOsfts8MaAwT5OJFesNC70E",
+    authDomain: "calendario-ea1a8.firebaseapp.com",
+    projectId: "calendario-ea1a8",
+    storageBucket: "calendario-ea1a8.firebasestorage.app",
+    messagingSenderId: "879936118649",
+    appId: "1:879936118649:web:171b2761e4eeab0cb519a8"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 // Variables globales
 let currentWeekStart = getMonday(new Date());
 let tasks = [];
 let currentUser = null;
+let unsubscribeTasks = null; // Para limpiar el listener de Firestore
 
-// Cargar datos al iniciar
+// Cargar datos al iniciar y escuchar cambios de autenticación
 window.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
 // Inicializar la aplicación
 function initializeApp() {
-    const savedUser = localStorage.getItem('currentUser');
-    
-    if (savedUser) {
-        // Si hay usuario guardado, cargar el calendario
-        currentUser = JSON.parse(savedUser);
-        showCalendarSection();
-        loadUserTasks();
-        renderCalendar();
-        setupEventListeners();
-    } else {
-        // Si no hay usuario, mostrar login
-        showLoginSection();
-        setupLoginListeners();
-    }
+    // Escuchar el estado de autenticación de Firebase
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // Usuario conectado
+            currentUser = {
+                id: user.uid,
+                name: user.displayName || user.email.split('@')[0], // Usar email si no tiene nombre
+                email: user.email
+            };
+            showCalendarSection();
+            loadUserTasks();
+            setupEventListeners();
+        } else {
+            // Usuario desconectado
+            currentUser = null;
+            if (unsubscribeTasks) {
+                unsubscribeTasks(); // Dejar de escuchar tareas al cerrar sesión
+            }
+            showLoginSection();
+            setupLoginListeners();
+        }
+    });
 }
 
 // Mostrar/ocultar secciones
@@ -45,7 +69,7 @@ function setupLoginListeners() {
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('registerBtn').addEventListener('click', handleRegister);
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    
+
     // Permitir Enter en inputs
     document.getElementById('loginUsername').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
@@ -63,7 +87,7 @@ function toggleLoginForm(event) {
     event.preventDefault();
     document.getElementById('loginForm').classList.toggle('hidden');
     document.getElementById('registerForm').classList.toggle('hidden');
-    
+
     // Limpiar campos
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
@@ -74,41 +98,28 @@ function toggleLoginForm(event) {
     document.getElementById('registerConfirmPassword').value = '';
 }
 
-// Obtener todos los usuarios
+// Obtener todos los usuarios (ya no es necesario con Firebase Auth, dejamos solo un log)
 function getAllUsers() {
-    const saved = localStorage.getItem('users');
-    return saved ? JSON.parse(saved) : [];
+    console.warn("getAllUsers ya no se usa con Firebase.");
+    return [];
 }
 
-// Guardar todos los usuarios
+// Guardar todos los usuarios (ya no es necesario con Firebase Auth)
 function saveAllUsers(users) {
-    localStorage.setItem('users', JSON.stringify(users));
+    console.warn("saveAllUsers ya no se usa con Firebase.");
 }
 
-// Crear usuario demo si no existe
+// Inicializar usuario demo (Ya no se usa de esta manera con Firebase, requeriría registrar en Firebase Auth)
 function initializeDemoUser() {
-    const users = getAllUsers();
-    const demoExists = users.some(u => u.username === 'demo');
-    
-    if (!demoExists) {
-        const demoUser = {
-            id: Date.now(),
-            name: 'Usuario Demo',
-            username: 'demo',
-            email: 'demo@example.com',
-            password: 'demo'
-        };
-        users.push(demoUser);
-        saveAllUsers(users);
-    }
+    console.log("Sistema migrado a Firebase, usar registro/login normal.");
 }
 
 // Inicializar usuario demo
 initializeDemoUser();
 
-// Manejar login
+// Manejar login con Firebase
 function handleLogin() {
-    const username = document.getElementById('loginUsername').value.trim();
+    let username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
 
     if (!username || !password) {
@@ -116,38 +127,34 @@ function handleLogin() {
         return;
     }
 
-    const users = getAllUsers();
-    const user = users.find(u => u.username === username && u.password === password);
-
-    if (!user) {
-        alert('Usuario o contraseña incorrectos');
-        return;
+    // Adaptación: Si el usuario introduce "demo", intentamos con demo@example.com (requiere crear este usuario en Firebase primero)
+    if (!username.includes('@')) {
+        username = `${username}@example.com`; // Ajuste temporal para soportar usernames simples asumiendo correos.
     }
 
-    currentUser = {
-        id: user.id,
-        name: user.name,
-        username: user.username
-    };
-
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    showCalendarSection();
-    loadUserTasks();
-    renderCalendar();
-    setupEventListeners();
-    populateHours();
+    auth.signInWithEmailAndPassword(username, password)
+        .then((userCredential) => {
+            // Login exitoso, onAuthStateChanged manejará el cambio
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            populateHours(); // Asegurar que las horas se llenen si no estaban
+        })
+        .catch((error) => {
+            console.error("Error en login:", error);
+            alert('Usuario o contraseña incorrectos. Verifica en Firebase si existe la cuenta.');
+        });
 }
 
-// Manejar registro
+// Manejar registro con Firebase
 function handleRegister() {
     const name = document.getElementById('registerName').value.trim();
-    const username = document.getElementById('registerUsername').value.trim();
+    const username = document.getElementById('registerUsername').value.trim(); // Se ignorará username, Firebase usa email
     const email = document.getElementById('registerEmail').value.trim();
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-    if (!name || !username || !email || !password || !confirmPassword) {
-        alert('Por favor completa todos los campos');
+    if (!name || !email || !password || !confirmPassword) {
+        alert('Por favor completa todos los campos obligatorios (nombre, email, contraseñas)');
         return;
     }
 
@@ -156,60 +163,51 @@ function handleRegister() {
         return;
     }
 
-    if (password.length < 4) {
-        alert('La contraseña debe tener al menos 4 caracteres');
+    if (password.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres (requerido por Firebase)');
         return;
     }
 
-    const users = getAllUsers();
-    
-    if (users.some(u => u.username === username)) {
-        alert('El usuario ya existe');
-        return;
-    }
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // Actualizar nombre de usuario en Firebase
+            return userCredential.user.updateProfile({
+                displayName: name
+            }).then(() => {
+                alert('¡Cuenta creada e iniciada correctamente!');
 
-    if (users.some(u => u.email === email)) {
-        alert('El correo ya está registrado');
-        return;
-    }
-
-    const newUser = {
-        id: Date.now(),
-        name,
-        username,
-        email,
-        password
-    };
-
-    users.push(newUser);
-    saveAllUsers(users);
-
-    alert('¡Cuenta creada correctamente! Ahora inicia sesión.');
-    
-    // Limpiar y volver al formulario de login
-    document.getElementById('registerForm').classList.add('hidden');
-    document.getElementById('loginForm').classList.remove('hidden');
-    document.getElementById('loginUsername').value = username;
-    document.getElementById('loginPassword').value = '';
+                // Limpiar y volver al formulario de login visualmente aunque ya estés logueado (onAuthStateChanged te enviará al calendario)
+                document.getElementById('registerForm').classList.add('hidden');
+                document.getElementById('loginForm').classList.remove('hidden');
+            });
+        })
+        .catch((error) => {
+            console.error("Error en registro:", error);
+            if (error.code === 'auth/email-already-in-use') {
+                alert('El correo ya está registrado');
+            } else {
+                alert('Error al registrar: ' + error.message);
+            }
+        });
 }
 
-// Manejar logout
+// Manejar logout con Firebase
 function handleLogout() {
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-        localStorage.removeItem('currentUser');
-        currentUser = null;
-        tasks = [];
-        showLoginSection();
-        setupLoginListeners();
-        
-        // Limpiar formularios
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('registerName').value = '';
-        document.getElementById('registerUsername').value = '';
-        document.getElementById('registerEmail').value = '';
-        document.getElementById('registerPassword').value = '';
-        document.getElementById('registerConfirmPassword').value = '';
+        auth.signOut().then(() => {
+            // Limpiar formularios
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerConfirmPassword').value = '';
+
+            // onAuthStateChanged se encargará de ocultar calendario y mostrar login
+        }).catch((error) => {
+            console.error("Error al cerrar sesión", error);
+        });
     }
 }
 
@@ -312,31 +310,40 @@ function createTaskElement(task) {
     const taskElement = document.createElement('div');
     taskElement.className = `task-item ${task.type}`;
 
+    // Ver si el usuario actual es el autor para mostrar botones de edición/eliminación
+    const isAuthor = currentUser && currentUser.id === task.authorId;
+
     const hour = String(task.hour).padStart(2, '0');
     taskElement.innerHTML = `
         <div class="task-title">${task.title}</div>
         <div class="task-hour">🕐 ${hour}:00</div>
         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
         <span class="task-type ${task.type}">${task.type.toUpperCase()}</span>
+        <div class="task-author" style="font-size: 0.8em; color: #666; margin-top: 5px;">
+            👤 Añadida por: ${task.authorName || 'Desconocido'}
+        </div>
+        ${isAuthor ? `
         <div class="task-buttons">
             <button class="btn-edit">Editar</button>
             <button class="btn-delete">Eliminar</button>
-        </div>
+        </div>` : ''}
     `;
 
-    // Event listeners para los botones
-    const editBtn = taskElement.querySelector('.btn-edit');
-    const deleteBtn = taskElement.querySelector('.btn-delete');
+    // Event listeners para los botones (solo si existen porque es el autor)
+    if (isAuthor) {
+        const editBtn = taskElement.querySelector('.btn-edit');
+        const deleteBtn = taskElement.querySelector('.btn-delete');
 
-    editBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openEditModal(task);
-    });
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditModal(task);
+        });
 
-    deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteTask(task.id);
-    });
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteTask(task.id);
+        });
+    }
 
     return taskElement;
 }
@@ -386,8 +393,10 @@ function setupEventListeners() {
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
 }
 
-// Agregar tarea
+// Agregar tarea a Firestore
 function addTask() {
+    if (!currentUser) return; // Seguridad extra
+
     const title = document.getElementById('taskTitle').value.trim();
     const day = document.getElementById('taskDay').value;
     const hour = parseInt(document.getElementById('taskHour').value);
@@ -409,27 +418,33 @@ function addTask() {
         return;
     }
 
-    const task = {
-        id: Date.now(),
+    const newTask = {
         title,
         date: day,
         hour,
         type,
-        description
+        description,
+        authorId: currentUser.id,
+        authorName: currentUser.name,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    tasks.push(task);
-    saveTasks();
-    renderCalendar();
+    // Añadir a Firestore en lugar de array local
+    db.collection('tasks').add(newTask)
+        .then(() => {
+            // Limpiar formulario exitosamente
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDay').value = '';
+            document.getElementById('taskHour').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskType').value = 'tarea';
 
-    // Limpiar formulario
-    document.getElementById('taskTitle').value = '';
-    document.getElementById('taskDay').value = '';
-    document.getElementById('taskHour').value = '';
-    document.getElementById('taskDescription').value = '';
-    document.getElementById('taskType').value = 'tarea';
-
-    alert('¡Tarea agregada correctamente!');
+            alert('¡Actividad agregada al calendario para toda la clase!');
+        })
+        .catch((error) => {
+            console.error("Error agregando la tarea: ", error);
+            alert('Hubo un error al agregar la tarea.');
+        });
 }
 
 // Abrir modal de edición
@@ -444,7 +459,7 @@ function openEditModal(task) {
     document.getElementById('editModal').style.display = 'block';
 }
 
-// Guardar edición
+// Guardar edición en Firestore
 function saveEdit() {
     const title = document.getElementById('editTaskTitle').value.trim();
     const description = document.getElementById('editTaskDescription').value.trim();
@@ -455,42 +470,63 @@ function saveEdit() {
         return;
     }
 
-    const taskIndex = tasks.findIndex(t => t.id === currentEditingTaskId);
-    if (taskIndex !== -1) {
-        tasks[taskIndex].title = title;
-        tasks[taskIndex].description = description;
-        tasks[taskIndex].type = type;
-        saveTasks();
-        renderCalendar();
+    if (!currentEditingTaskId) return;
+
+    db.collection('tasks').doc(currentEditingTaskId).update({
+        title: title,
+        description: description,
+        type: type,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
         document.getElementById('editModal').style.display = 'none';
-        alert('¡Tarea actualizada correctamente!');
-    }
+        alert('¡Actividad actualizada correctamente!');
+    }).catch((error) => {
+        console.error("Error actualizando la tarea: ", error);
+        alert('Hubo un error al actualizar.');
+    });
 }
 
-// Eliminar tarea
+// Eliminar tarea de Firestore
 function deleteTask(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta tarea?')) {
-        tasks = tasks.filter(task => task.id !== id);
-        saveTasks();
-        renderCalendar();
+    if (confirm('¿Estás seguro de que deseas eliminar esta actividad? Todos los estudiantes dejarán de verla.')) {
+        db.collection('tasks').doc(id).delete().then(() => {
+            console.log("Tarea eliminada exitosamente");
+        }).catch((error) => {
+            console.error("Error eliminando la tarea: ", error);
+            alert("No se pudo eliminar la tarea.");
+        });
     }
 }
 
-// LocalStorage
-function saveTasks() {
-    if (!currentUser) return;
-    const userTasksKey = `tasks_${currentUser.id}`;
-    localStorage.setItem(userTasksKey, JSON.stringify(tasks));
-}
-
+// Base de Datos (Firestore) Realtime Listener
 function loadUserTasks() {
-    if (!currentUser) {
-        tasks = [];
-        return;
+    if (!currentUser) return;
+
+    // Obtener TODAS las tareas globales para que sea colaborativo
+    // Limpiamos listener previo si existía
+    if (unsubscribeTasks) {
+        unsubscribeTasks();
     }
-    const userTasksKey = `tasks_${currentUser.id}`;
-    const saved = localStorage.getItem(userTasksKey);
-    tasks = saved ? JSON.parse(saved) : [];
+
+    unsubscribeTasks = db.collection('tasks').onSnapshot((querySnapshot) => {
+        tasks = []; // Limpiar array local
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            tasks.push({
+                id: doc.id,
+                ...data
+            });
+        });
+        // Una vez cargadas/actualizadas las tareas, renderizar de nuevo el calendario
+        renderCalendar();
+    }, (error) => {
+        console.error("Error escuchando tareas en Firestore:", error);
+    });
+}
+
+// Función vieja de LocalStorage, ya no se usa pero prevenimos errores si quedó alguna llamada.
+function saveTasks() {
+    console.warn("saveTasks llamada, pero ahora las tareas se guardan directamente con db.collection().addDoc()");
 }
 
 // Permitir Enter en textarea para agregar saltos de línea

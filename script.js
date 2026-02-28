@@ -73,7 +73,6 @@ function showCalendarSection() {
 function setupLoginListeners() {
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('registerBtn').addEventListener('click', handleRegister);
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
     // Permitir Enter en inputs
     document.getElementById('loginUsername').addEventListener('keypress', (e) => {
@@ -330,6 +329,7 @@ function createTaskElement(task) {
         ${isAuthor ? `
         <div class="task-buttons">
             <button class="btn-edit">Editar</button>
+            <br>
             <button class="btn-delete">Eliminar</button>
         </div>` : ''}
     `;
@@ -372,6 +372,7 @@ function updateDayOptions(dates) {
 
 // Event listeners
 function setupEventListeners() {
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('addTaskBtn').addEventListener('click', addTask);
     document.getElementById('prevWeek').addEventListener('click', () => {
         currentWeekStart.setDate(currentWeekStart.getDate() - 7);

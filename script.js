@@ -38,6 +38,11 @@ function initializeApp() {
             showCalendarSection();
             loadUserTasks();
             setupEventListeners();
+
+            // Llenar las opciones de hora si está vacío
+            if (document.getElementById('taskHour').options.length <= 1) {
+                populateHours();
+            }
         } else {
             // Usuario desconectado
             currentUser = null;

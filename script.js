@@ -105,25 +105,6 @@ function toggleLoginForm(event) {
     document.getElementById('registerConfirmPassword').value = '';
 }
 
-// Obtener todos los usuarios (ya no es necesario con Firebase Auth, dejamos solo un log)
-function getAllUsers() {
-    console.warn("getAllUsers ya no se usa con Firebase.");
-    return [];
-}
-
-// Guardar todos los usuarios (ya no es necesario con Firebase Auth)
-function saveAllUsers(users) {
-    console.warn("saveAllUsers ya no se usa con Firebase.");
-}
-
-// Inicializar usuario demo (Ya no se usa de esta manera con Firebase, requeriría registrar en Firebase Auth)
-function initializeDemoUser() {
-    console.log("Sistema migrado a Firebase, usar registro/login normal.");
-}
-
-// Inicializar usuario demo
-initializeDemoUser();
-
 // Manejar login con Firebase
 function handleLogin() {
     let username = document.getElementById('loginUsername').value.trim();
@@ -337,8 +318,6 @@ function createTaskElement(task) {
 
     return taskElement;
 }
-
-// Función eliminada: updateDayOptions, ya no es necesaria con el input date
 
 // Event listeners
 function setupEventListeners() {
@@ -586,11 +565,6 @@ function loadUserTasks() {
     }, (error) => {
         console.error("Error escuchando tareas en Firestore:", error);
     });
-}
-
-// Función vieja de LocalStorage, ya no se usa pero prevenimos errores si quedó alguna llamada.
-function saveTasks() {
-    console.warn("saveTasks llamada, pero ahora las tareas se guardan directamente con db.collection().addDoc()");
 }
 
 // Permitir Enter en textarea para agregar saltos de línea

@@ -65,6 +65,9 @@ function showCalendarSection() {
     document.getElementById('loginSection').classList.add('hidden');
     document.getElementById('calendarSection').classList.remove('hidden');
     document.getElementById('welcomeUser').textContent = `👤 ${currentUser.name}`;
+
+    // Set current date directly in taskDay format 'YYYY-MM-DD'
+    document.getElementById('taskDay').value = formatDateKey(new Date());
 }
 
 // ========== FUNCIONES DE AUTENTICACIÓN ==========
@@ -304,9 +307,6 @@ function renderCalendar() {
         dayColumn.appendChild(dayTasks);
         calendarGrid.appendChild(dayColumn);
     });
-
-    // Actualizar opciones de días
-    updateDayOptions(dates);
 }
 
 // Crear elemento de tarea
@@ -353,22 +353,7 @@ function createTaskElement(task) {
     return taskElement;
 }
 
-// Actualizar opciones de días
-function updateDayOptions(dates) {
-    const daySelect = document.getElementById('taskDay');
-    const currentOptions = daySelect.querySelectorAll('option:not(:first-child)');
-    currentOptions.forEach(opt => opt.remove());
-
-    const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
-    dates.forEach((date, index) => {
-        const option = document.createElement('option');
-        const dateKey = formatDateKey(date);
-        option.value = dateKey;
-        option.textContent = `${dayNames[index]} ${date.getDate()}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-        daySelect.appendChild(option);
-    });
-}
+// Función eliminada: updateDayOptions, ya no es necesaria con el input date
 
 // Event listeners
 function setupEventListeners() {
@@ -440,7 +425,7 @@ function addTask() {
         .then(() => {
             // Limpiar formulario exitosamente
             document.getElementById('taskTitle').value = '';
-            document.getElementById('taskDay').value = '';
+            document.getElementById('taskDay').value = formatDateKey(new Date());
             document.getElementById('taskHour').value = '';
             document.getElementById('taskDescription').value = '';
             document.getElementById('taskType').value = 'tarea';

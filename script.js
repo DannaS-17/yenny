@@ -267,6 +267,11 @@ function renderCalendar() {
     const endDate = new Date(dates[6]);
     weekInfo.textContent = `${dates[0].toLocaleDateString('es-ES')} - ${endDate.toLocaleDateString('es-ES')}`;
 
+    const weekSelector = document.getElementById('weekSelector');
+    if (weekSelector) {
+        weekSelector.value = formatDateKey(dates[0]);
+    }
+
     // Limpiar calendario
     calendarGrid.innerHTML = '';
 
@@ -367,6 +372,21 @@ function setupEventListeners() {
         currentWeekStart.setDate(currentWeekStart.getDate() + 7);
         renderCalendar();
     });
+
+    const weekSelector = document.getElementById('weekSelector');
+    if (weekSelector) {
+        weekSelector.addEventListener('change', (e) => {
+            if (e.target.value) {
+                // Evitar desfase horario dividiendo la fecha manualmente
+                const parts = e.target.value.split('-');
+                if (parts.length === 3) {
+                    const selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                    currentWeekStart = getMonday(selectedDate);
+                    renderCalendar();
+                }
+            }
+        });
+    }
 
     // Modal
     const modal = document.getElementById('editModal');

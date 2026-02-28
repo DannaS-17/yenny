@@ -414,124 +414,182 @@ body {
 
 .task-item {
     background: white;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
     border-left: 4px solid;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .task-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
 
 .task-item.tarea {
     border-left-color: #3498db;
-    background: #ecf0f1;
 }
 
 .task-item.trabajo {
     border-left-color: #e74c3c;
-    background: #fadbd8;
 }
 
 .task-item.examen {
     border-left-color: #f39c12;
-    background: #fdebd0;
 }
 
 .task-item.evento {
     border-left-color: #2ecc71;
-    background: #d5f4e6;
 }
 
-.task-title {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-    font-size: 0.95em;
+.task-header-simple {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
 }
 
-.task-hour {
-    font-size: 0.85em;
-    color: #666;
-    margin-bottom: 5px;
+.task-type-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
 }
 
-.task-description {
-    font-size: 0.85em;
-    color: #555;
-    margin-bottom: 10px;
-    line-height: 1.3;
+.task-type-dot.tarea {
+    background: #3498db;
 }
 
-.task-type {
-    display: inline-block;
+.task-type-dot.trabajo {
+    background: #e74c3c;
+}
+
+.task-type-dot.examen {
+    background: #f39c12;
+}
+
+.task-type-dot.evento {
+    background: #2ecc71;
+}
+
+.task-hour-simple {
     font-size: 0.75em;
-    padding: 3px 8px;
-    border-radius: 4px;
+    color: #888;
+    font-weight: 600;
+}
+
+.task-title-simple {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9em;
+    line-height: 1.3;
+    /* Evitar que el título haga overflow */
+    word-break: break-word;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Modal View Custom Styles */
+.view-task-content {
+    padding: 35px 40px;
+    max-width: 550px;
+}
+
+.view-task-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.view-task-header h2 {
+    margin: 10px 0 0 0;
+    font-size: 1.8em;
+    color: #2c3e50;
+    line-height: 1.2;
+}
+
+.task-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75em;
     font-weight: bold;
     text-transform: uppercase;
 }
 
-.task-type.tarea {
-    background: #3498db;
-    color: white;
+.task-type-badge.tarea {
+    background: #e1f0fa;
+    color: #2980b9;
 }
 
-.task-type.trabajo {
-    background: #e74c3c;
-    color: white;
+.task-type-badge.trabajo {
+    background: #fdedec;
+    color: #c0392b;
 }
 
-.task-type.examen {
-    background: #f39c12;
-    color: white;
+.task-type-badge.examen {
+    background: #fef5e7;
+    color: #d68910;
 }
 
-.task-type.evento {
-    background: #2ecc71;
-    color: white;
+.task-type-badge.evento {
+    background: #e9f7ef;
+    color: #27ae60;
 }
 
-.task-buttons {
+.view-task-meta {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.view-task-meta p {
+    margin: 0;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.view-task-description-box {
+    margin-bottom: 25px;
+}
+
+.view-task-description-box h3 {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.view-task-description-box p {
+    color: #444;
+    line-height: 1.6;
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    /* Respeta saltos de linea */
+}
+
+.view-task-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 30px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
 }
 
-.btn-edit,
-.btn-delete {
+.view-task-actions button {
     flex: 1;
-    padding: 6px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.btn-edit {
-    background: #3498db;
-    color: white;
-}
-
-.btn-edit:hover {
-    background: #2980b9;
-}
-
-.btn-delete {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-delete:hover {
-    background: #c0392b;
+    padding: 12px;
+    font-size: 1em;
 }
 
 .modal {

@@ -67,7 +67,8 @@
                     <button class="btn-nav" id="prevWeek">← Semana Anterior</button>
                     <div class="week-picker-container">
                         <span class="week-info" id="weekInfo"></span>
-                        <input type="date" id="weekSelector" class="week-selector-input" title="Elegir una fecha para ir a esa semana">
+                        <input type="date" id="weekSelector" class="week-selector-input"
+                            title="Elegir una fecha para ir a esa semana">
                     </div>
                     <button class="btn-nav" id="nextWeek">Próxima Semana →</button>
                 </div>
@@ -99,10 +100,34 @@
             </div>
         </div>
 
+        <!-- Modal para ver detalles de la tarea -->
+        <div id="viewTaskModal" class="modal">
+            <div class="modal-content view-task-content">
+                <span class="close view-close">&times;</span>
+                <div class="view-task-header">
+                    <span id="viewTaskType" class="task-type-badge"></span>
+                    <h2 id="viewTaskTitle"></h2>
+                </div>
+                <div class="view-task-meta">
+                    <p>📅 <span id="viewTaskDate"></span></p>
+                    <p>🕐 <span id="viewTaskTime"></span></p>
+                    <p>👤 <span id="viewTaskAuthor"></span></p>
+                </div>
+                <div class="view-task-description-box" id="viewTaskDescContainer">
+                    <h3>Descripción</h3>
+                    <p id="viewTaskDescription"></p>
+                </div>
+                <div class="view-task-actions" id="viewTaskActions" style="display: none;">
+                    <button class="btn-edit" id="viewBtnEdit">Editar Tarea</button>
+                    <button class="btn-delete" id="viewBtnDelete">Eliminar Tarea</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal para editar tarea -->
         <div id="editModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <span class="close edit-close">&times;</span>
                 <h2>Editar Tarea</h2>
                 <div class="form-group">
                     <input type="text" id="editTaskTitle" placeholder="Título">

@@ -318,42 +318,22 @@ function renderCalendar() {
 function createTaskElement(task) {
     const taskElement = document.createElement('div');
     taskElement.className = `task-item ${task.type}`;
+    taskElement.title = "Ver detalles";
 
-    // Ver si el usuario actual es el autor para mostrar botones de edición/eliminación
-    const isAuthor = currentUser && currentUser.id === task.authorId;
-
+    // Modificado para mostrar solo resumen en el calendario
     const hour = String(task.hour).padStart(2, '0');
     taskElement.innerHTML = `
-        <div class="task-title">${task.title}</div>
-        <div class="task-hour">🕐 ${hour}:00</div>
-        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-        <span class="task-type ${task.type}">${task.type.toUpperCase()}</span>
-        <div class="task-author" style="font-size: 0.8em; color: #666; margin-top: 5px;">
-            👤 Añadida por: ${task.authorName || 'Desconocido'}
+        <div class="task-header-simple">
+            <span class="task-type-dot ${task.type}"></span>
+            <span class="task-hour-simple">${hour}:00</span>
         </div>
-        ${isAuthor ? `
-        <div class="task-buttons">
-            <button class="btn-edit">Editar</button>
-            <br>
-            <button class="btn-delete">Eliminar</button>
-        </div>` : ''}
+        <div class="task-title-simple">${task.title}</div>
     `;
 
-    // Event listeners para los botones (solo si existen porque es el autor)
-    if (isAuthor) {
-        const editBtn = taskElement.querySelector('.btn-edit');
-        const deleteBtn = taskElement.querySelector('.btn-delete');
-
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditModal(task);
-        });
-
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteTask(task.id);
-        });
-    }
+    // Abrir modal de detalles al hacer click
+    taskElement.addEventListener('click', () => {
+        openViewModal(task);
+    });
 
     return taskElement;
 }
@@ -388,20 +368,44 @@ function setupEventListeners() {
         });
     }
 
-    // Modal
-    const modal = document.getElementById('editModal');
-    const closeBtn = document.querySelector('.close');
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
+    // Modal edit
+    const editModal = document.getElementById('editModal');
+    const editCloseBtn = document.querySelector('.edit-close');
+    editCloseBtn.addEventListener('click', () => {
+        editModal.style.display = 'none';
+    });
+
+    // Modal view
+    const viewModal = document.getElementById('viewTaskModal');
+    const viewCloseBtn = document.querySelector('.view-close');
+    viewCloseBtn.addEventListener('click', () => {
+        viewModal.style.display = 'none';
+
+        // Si hay una tarea en vista previa que se estaba editando, limpiarlo (opcional)
+        currentViewingTask = null;
     });
 
     window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
+        if (e.target === editModal) editModal.style.display = 'none';
+        if (e.target === viewModal) viewModal.style.display = 'none';
     });
 
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+
+    // Listeners for View Modal Actions
+    document.getElementById('viewBtnEdit').addEventListener('click', () => {
+        if (currentViewingTask) {
+            document.getElementById('viewTaskModal').style.display = 'none';
+            openEditModal(currentViewingTask);
+        }
+    });
+
+    document.getElementById('viewBtnDelete').addEventListener('click', () => {
+        if (currentViewingTask) {
+            deleteTask(currentViewingTask.id);
+            document.getElementById('viewTaskModal').style.display = 'none';
+        }
+    });
 }
 
 // Agregar tarea a Firestore
@@ -458,9 +462,58 @@ function addTask() {
         });
 }
 
-// Abrir modal de edición
+// Variables para modal actual
+let currentViewingTask = null;
 let currentEditingTaskId = null;
 
+// Abrir modal de vista
+function openViewModal(task) {
+    currentViewingTask = task;
+
+    const isAuthor = currentUser && currentUser.id === task.authorId;
+
+    // Header
+    const typeLabel = document.getElementById('viewTaskType');
+    typeLabel.textContent = task.type.toUpperCase();
+    // Limpiar clases de tipo y agregar la actual
+    typeLabel.className = `task-type-badge ${task.type}`;
+
+    document.getElementById('viewTaskTitle').textContent = task.title;
+
+    // Meta
+    // Formatear fecha para el modal (YYYY-MM-DD a texto)
+    const [year, month, day] = task.date.split('-');
+    const dateObj = new Date(year, month - 1, day);
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+    document.getElementById('viewTaskDate').textContent = dateObj.toLocaleDateString('es-ES', options);
+    document.getElementById('viewTaskTime').textContent = `${String(task.hour).padStart(2, '0')}:00`;
+    document.getElementById('viewTaskAuthor').textContent = task.authorName || 'Desconocido';
+
+    // Descripcion
+    const descContainer = document.getElementById('viewTaskDescContainer');
+    const descText = document.getElementById('viewTaskDescription');
+
+    if (task.description && task.description.trim() !== "") {
+        descText.textContent = task.description;
+        descContainer.style.display = 'block';
+    } else {
+        descContainer.style.display = 'none';
+    }
+
+    // Acciones (Ocultar si no es autor)
+    const actionsContainer = document.getElementById('viewTaskActions');
+    if (isAuthor) {
+        actionsContainer.style.display = 'flex';
+    } else {
+        actionsContainer.style.display = 'none';
+    }
+
+    // Mostrar Modal
+    document.getElementById('viewTaskModal').style.display = 'block';
+}
+
+// Abrir modal de edición
 function openEditModal(task) {
     currentEditingTaskId = task.id;
     document.getElementById('editTaskTitle').value = task.title;

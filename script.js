@@ -77,6 +77,8 @@ function setupLoginListeners() {
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('registerBtn').addEventListener('click', handleRegister);
 
+    document.getElementById('btnResetPassword').addEventListener('click', handleForgotPassword);
+
     // Permitir Enter en inputs
     document.getElementById('loginUsername').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleLogin();
@@ -89,13 +91,33 @@ function setupLoginListeners() {
     });
 }
 
-// Cambiar entre formularios
+// Cambiar entre formulario Login / Registro / Olvidar Contraseña
 function toggleLoginForm(event) {
-    event.preventDefault();
-    document.getElementById('loginForm').classList.toggle('hidden');
-    document.getElementById('registerForm').classList.toggle('hidden');
+    if (event) event.preventDefault();
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('forgotPasswordForm').classList.add('hidden');
+    clearAuthForms();
+}
 
-    // Limpiar campos
+function toggleRegisterForm(event) {
+    if (event) event.preventDefault();
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.remove('hidden');
+    document.getElementById('forgotPasswordForm').classList.add('hidden');
+    clearAuthForms();
+}
+
+function toggleForgotPasswordForm(event) {
+    if (event) event.preventDefault();
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.add('hidden');
+    document.getElementById('forgotPasswordForm').classList.remove('hidden');
+    clearAuthForms();
+}
+
+// Limpiar campos de todos los formularios
+function clearAuthForms() {
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('registerName').value = '';
@@ -103,6 +125,7 @@ function toggleLoginForm(event) {
     document.getElementById('registerEmail').value = '';
     document.getElementById('registerPassword').value = '';
     document.getElementById('registerConfirmPassword').value = '';
+    document.getElementById('resetEmail').value = '';
 }
 
 // Manejar login con Firebase
@@ -130,6 +153,40 @@ function handleLogin() {
         .catch((error) => {
             console.error("Error en login:", error);
             alert('Usuario o contraseña incorrectos. Verifica en Firebase si existe la cuenta.');
+        });
+}
+
+// Manejar olvidar contraseña con Firebase
+function handleForgotPassword(event) {
+    if (event) event.preventDefault();
+
+    let email = document.getElementById('resetEmail').value.trim();
+
+    if (!email) {
+        alert('Por favor, ingresa tu correo electrónico registrado.');
+        document.getElementById('resetEmail').focus();
+        return;
+    }
+
+    // Adaptación: Si el usuario introduce "demo", intentamos con demo@example.com
+    if (!email.includes('@')) {
+        email = `${email}@example.com`;
+    }
+
+    auth.sendPasswordResetEmail(email)
+        .then(() => {
+            alert(`Se ha enviado un enlace de recuperación a: ${email}\n\nRevisa tu bandeja de entrada (y la carpeta de spam) para restablecer tu contraseña y luego vuelve para Iniciar Sesión.`);
+            toggleLoginForm(); // Vuelve al login automáticamente
+        })
+        .catch((error) => {
+            console.error("Error al enviar correo de recuperación:", error);
+            if (error.code === 'auth/user-not-found') {
+                alert('No existe ninguna cuenta registrada con este correo electrónico.');
+            } else if (error.code === 'auth/invalid-email') {
+                alert('El formato del correo electrónico es inválido.');
+            } else {
+                alert('Error al intentar recuperar la contraseña: ' + error.message);
+            }
         });
 }
 

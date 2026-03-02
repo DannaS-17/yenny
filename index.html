@@ -26,8 +26,12 @@
                         <input type="password" id="loginPassword" placeholder="Contraseña" required>
                         <button class="btn-login" id="loginBtn">Ingresar</button>
                     </div>
+                    <p class="form-toggle" style="margin-top: 10px; margin-bottom: 5px;">
+                        ¿Olvidaste tu contraseña? <a href="#" onclick="toggleForgotPasswordForm(event)">Recupérala
+                            aquí</a>
+                    </p>
                     <p class="form-toggle">¿No tienes cuenta? <a href="#"
-                            onclick="toggleLoginForm(event)">Regístrate</a></p>
+                            onclick="toggleRegisterForm(event)">Regístrate</a></p>
                 </div>
 
                 <!-- Formulario de Registro -->
@@ -43,6 +47,20 @@
                     </div>
                     <p class="form-toggle">¿Ya tienes cuenta? <a href="#" onclick="toggleLoginForm(event)">Inicia
                             sesión</a></p>
+                </div>
+
+                <!-- Formulario de Recuperación de Contraseña -->
+                <div class="forgot-password-form hidden" id="forgotPasswordForm">
+                    <h2>Recuperar Contraseña</h2>
+                    <p style="text-align: center; color: #555; margin-bottom: 15px; font-size: 0.9em;">Ingresa tu correo
+                        electrónico registrado y te enviaremos un enlace para restablecer tu contraseña.</p>
+                    <div class="form-group">
+                        <input type="email" id="resetEmail" placeholder="Correo electrónico" required>
+                        <button class="btn-login" id="btnResetPassword">Enviar Enlace</button>
+                    </div>
+                    <p class="form-toggle" style="margin-top: 20px;">
+                        <a href="#" onclick="toggleLoginForm(event)">← Volver a Iniciar Sesión</a>
+                    </p>
                 </div>
             </div>
 

@@ -73,17 +73,20 @@ body {
 }
 
 .login-form,
-.register-form {
+.register-form,
+.forgot-password-form {
     animation: fadeIn 0.3s ease;
 }
 
 .login-form.hidden,
-.register-form.hidden {
+.register-form.hidden,
+.forgot-password-form.hidden {
     display: none;
 }
 
 .login-form h2,
-.register-form h2 {
+.register-form h2,
+.forgot-password-form h2 {
     color: #333;
     margin-bottom: 25px;
     font-size: 1.8em;

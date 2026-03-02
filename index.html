@@ -77,7 +77,12 @@
                 <div class="header-top">
                     <h1>📅 Mi Calendario Semanal</h1>
                     <div class="user-info">
-                        <span id="welcomeUser"></span>
+                        <div class="user-menu-container">
+                            <span id="welcomeUser" class="user-menu-btn"></span>
+                            <div class="user-dropdown hidden" id="userDropdown">
+                                <button class="dropdown-item" id="openChangePasswordBtn">Cambiar Contraseña</button>
+                            </div>
+                        </div>
                         <button class="btn-logout" id="logoutBtn">Cerrar Sesión</button>
                     </div>
                 </div>
@@ -157,6 +162,23 @@
                         <option value="evento">Evento</option>
                     </select>
                     <button class="btn-save" id="saveEditBtn">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para cambiar contraseña -->
+        <div id="changePasswordModal" class="modal">
+            <div class="modal-content">
+                <span class="close cp-close">&times;</span>
+                <h2>Cambiar Contraseña</h2>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">Por seguridad, necesitamos verificar tu
+                    contraseña actual antes de crear una nueva.</p>
+                <div class="form-group">
+                    <input type="password" id="cpCurrentPassword" placeholder="Contraseña Actual" required>
+                    <input type="password" id="cpNewPassword" placeholder="Nueva Contraseña (mínimo 6 caracteres)"
+                        required>
+                    <input type="password" id="cpConfirmPassword" placeholder="Confirmar Nueva Contraseña" required>
+                    <button class="btn-save" id="savePasswordBtn">Actualizar Contraseña</button>
                 </div>
             </div>
         </div>

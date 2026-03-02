@@ -421,12 +421,26 @@ function setupEventListeners() {
         currentViewingTask = null;
     });
 
+    // Modal Password Change
+    const cpModal = document.getElementById('changePasswordModal');
+    const cpCloseBtn = document.querySelector('.cp-close');
+    cpCloseBtn.addEventListener('click', () => {
+        cpModal.style.display = 'none';
+        clearChangePasswordForm();
+    });
+
+    // Cierre global de modales
     window.addEventListener('click', (e) => {
         if (e.target === editModal) editModal.style.display = 'none';
         if (e.target === viewModal) viewModal.style.display = 'none';
+        if (e.target === cpModal) {
+            cpModal.style.display = 'none';
+            clearChangePasswordForm();
+        }
     });
 
     document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+    document.getElementById('savePasswordBtn').addEventListener('click', changeUserPassword);
 
     // Listeners for View Modal Actions
     document.getElementById('viewBtnEdit').addEventListener('click', () => {
@@ -440,6 +454,81 @@ function setupEventListeners() {
         if (currentViewingTask) {
             deleteTask(currentViewingTask.id);
             document.getElementById('viewTaskModal').style.display = 'none';
+        }
+    });
+
+    // Menu usuario dropdown
+    const userMenuBtn = document.getElementById('welcomeUser');
+    const userDropdown = document.getElementById('userDropdown');
+
+    userMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userDropdown.classList.toggle('hidden');
+    });
+
+    // Cerrar dropdown al clickear fuera
+    window.addEventListener('click', () => {
+        if (!userDropdown.classList.contains('hidden')) {
+            userDropdown.classList.add('hidden');
+        }
+    });
+
+    // Boton de abrir modal desde el dropdown
+    document.getElementById('openChangePasswordBtn').addEventListener('click', () => {
+        document.getElementById('changePasswordModal').style.display = 'block';
+    });
+}
+
+// Limpiar inputs modal password
+function clearChangePasswordForm() {
+    document.getElementById('cpCurrentPassword').value = '';
+    document.getElementById('cpNewPassword').value = '';
+    document.getElementById('cpConfirmPassword').value = '';
+}
+
+// Logica de Cambio de Password Firebase
+function changeUserPassword() {
+    const currentPass = document.getElementById('cpCurrentPassword').value;
+    const newPass = document.getElementById('cpNewPassword').value;
+    const confirmPass = document.getElementById('cpConfirmPassword').value;
+
+    if (!currentPass || !newPass || !confirmPass) {
+        alert("Por favor completa todos los campos.");
+        return;
+    }
+
+    if (newPass !== confirmPass) {
+        alert("Las contraseñas nuevas no coinciden.");
+        return;
+    }
+
+    if (newPass.length < 6) {
+        alert("La contraseña debe tener al menos 6 caracteres.");
+        return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) return; // Por seguridad double check
+
+    // 1. Reautenticar
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPass);
+
+    user.reauthenticateWithCredential(credential).then(() => {
+        // 2. Actualizar si la reautenticacion paso
+        user.updatePassword(newPass).then(() => {
+            alert("✅ ¡Contraseña actualizada exitosamente!");
+            document.getElementById('changePasswordModal').style.display = 'none';
+            clearChangePasswordForm();
+        }).catch((error) => {
+            console.error("Error actualizando password:", error);
+            alert("Error al intentar cambiar la contraseña: " + error.message);
+        });
+    }).catch((error) => {
+        console.error("Error de reautenticacion:", error);
+        if (error.code === 'auth/wrong-password') {
+            alert("❌ La contraseña actual ingresada es incorrecta.");
+        } else {
+            alert("❌ Ocurrió un error de seguridad al verificar tu cuenta.");
         }
     });
 }

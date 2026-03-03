@@ -118,7 +118,15 @@
                 </div>
 
                 <div class="calendar">
+                    <div class="view-toggles"
+                        style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: flex-end;">
+                        <button class="btn-view active" id="btnWeekView">Ver Semana</button>
+                        <button class="btn-view" id="btnMonthView">Ver Mes</button>
+                    </div>
                     <div class="calendar-grid" id="calendarGrid"></div>
+                    <div class="month-grid hidden" id="monthGrid">
+                        <!-- La cabecera de los días de la semana y los días se inyectarán por JS -->
+                    </div>
                 </div>
             </div>
         </div>

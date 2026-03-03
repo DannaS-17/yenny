@@ -284,8 +284,18 @@ function formatDateKey(date) {
     return date.toISOString().split('T')[0];
 }
 
-// Poblar horas
-function populateHours() {
+// Renderizar calendario base (elige cual mostrar)
+function renderCurrentView() {
+    const isMonthView = !document.getElementById('monthGrid').classList.contains('hidden');
+    if (isMonthView) {
+        renderMonthCalendar();
+    } else {
+        renderCalendar();
+    }
+}
+
+// Renderizar calendario semanal (existente)
+function renderCalendar() {
     const hourSelect = document.getElementById('taskHour');
     for (let i = 0; i < 24; i++) {
         const option = document.createElement('option');
@@ -352,7 +362,111 @@ function renderCalendar() {
     });
 }
 
-// Crear elemento de tarea
+// Renderizar calendario mensual
+function renderMonthCalendar() {
+    const monthGrid = document.getElementById('monthGrid');
+    const weekInfo = document.getElementById('weekInfo');
+    monthGrid.innerHTML = '';
+
+    // Obtener info del mes actual basado en currentWeekStart
+    const currentDate = new Date(currentWeekStart);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth(); // 0-11
+
+    // Nombres del mes
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    weekInfo.textContent = `${monthNames[month]} ${year}`;
+
+    // Días de la semana header
+    const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    dayNames.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'month-day-header';
+        header.textContent = day;
+        monthGrid.appendChild(header);
+    });
+
+    // Calcular días del mes
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+
+    // Determinar qué día de la semana cae el primero (0=Domingo, 1=Lunes...)
+    // Ajustar para que Lunes sea el primer día de la grilla
+    let startingDay = firstDayOfMonth.getDay();
+    startingDay = startingDay === 0 ? 6 : startingDay - 1; // Convertir Dom(0) a 6, Lun(1) a 0...
+
+    // Celdas vacías al inicio
+    for (let i = 0; i < startingDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'month-day empty-day';
+        monthGrid.appendChild(emptyCell);
+    }
+
+    // Celdas del mes
+    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+        const currentIterDate = new Date(year, month, i);
+        const dateKey = formatDateKey(currentIterDate);
+
+        const dayCell = document.createElement('div');
+        dayCell.className = 'month-day';
+
+        // Numero del dia
+        const dayNum = document.createElement('div');
+        dayNum.className = 'month-day-number';
+        dayNum.textContent = i;
+        dayCell.appendChild(dayNum);
+
+        // Contar tareas de este día
+        const dayTasksCount = tasks.filter(task => task.date === dateKey).length;
+
+        if (dayTasksCount > 0) {
+            const badge = document.createElement('div');
+            badge.className = 'month-task-badge';
+            badge.textContent = `${dayTasksCount} tarea${dayTasksCount > 1 ? 's' : ''}`;
+            dayCell.appendChild(badge);
+        }
+
+        // Funcionalidad: Al clickear, ir a la semana de ese día
+        dayCell.addEventListener('click', () => {
+            currentWeekStart = getMonday(currentIterDate);
+            switchToWeekView();
+        });
+
+        monthGrid.appendChild(dayCell);
+    }
+}
+
+// Funciones para cambiar vistas
+function switchToWeekView() {
+    document.getElementById('calendarGrid').classList.remove('hidden');
+    document.getElementById('monthGrid').classList.add('hidden');
+
+    document.getElementById('btnWeekView').classList.add('active');
+    document.getElementById('btnMonthView').classList.remove('active');
+
+    renderCalendar();
+}
+
+function switchToMonthView() {
+    document.getElementById('calendarGrid').classList.add('hidden');
+    document.getElementById('monthGrid').classList.remove('hidden');
+
+    document.getElementById('btnMonthView').classList.add('active');
+    document.getElementById('btnWeekView').classList.remove('active');
+
+    renderMonthCalendar();
+}
+
+// Poblar horas (Movida para mantener orden lógico)
+function populateHours() {
+    const hourSelect = document.getElementById('taskHour');
+    for (let i = 0; i < 24; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${String(i).padStart(2, '0')}:00`;
+        hourSelect.appendChild(option);
+    }
+}
 function createTaskElement(task) {
     const taskElement = document.createElement('div');
     taskElement.className = `task-item ${task.type}`;
@@ -380,13 +494,29 @@ function createTaskElement(task) {
 function setupEventListeners() {
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
     document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+    // Toggles de vista
+    document.getElementById('btnWeekView').addEventListener('click', switchToWeekView);
+    document.getElementById('btnMonthView').addEventListener('click', switchToMonthView);
+
     document.getElementById('prevWeek').addEventListener('click', () => {
-        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
-        renderCalendar();
+        const isMonthView = !document.getElementById('monthGrid').classList.contains('hidden');
+        if (isMonthView) {
+            currentWeekStart.setMonth(currentWeekStart.getMonth() - 1);
+        } else {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+        }
+        renderCurrentView();
     });
+
     document.getElementById('nextWeek').addEventListener('click', () => {
-        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-        renderCalendar();
+        const isMonthView = !document.getElementById('monthGrid').classList.contains('hidden');
+        if (isMonthView) {
+            currentWeekStart.setMonth(currentWeekStart.getMonth() + 1);
+        } else {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+        }
+        renderCurrentView();
     });
 
     const weekSelector = document.getElementById('weekSelector');
@@ -706,8 +836,8 @@ function loadUserTasks() {
                 ...data
             });
         });
-        // Una vez cargadas/actualizadas las tareas, renderizar de nuevo el calendario
-        renderCalendar();
+        // Una vez cargadas/actualizadas las tareas, renderizar de nuevo la vista actual
+        renderCurrentView();
     }, (error) => {
         console.error("Error escuchando tareas en Firestore:", error);
     });

@@ -528,7 +528,7 @@ function setupEventListeners() {
                 if (parts.length === 3) {
                     const selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
                     currentWeekStart = getMonday(selectedDate);
-                    renderCalendar();
+                    renderCurrentView();
                 }
             }
         });

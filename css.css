@@ -879,6 +879,32 @@ body {
     .day-tasks {
         max-height: 300px;
     }
+
+    .month-grid {
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .month-day {
+        padding: 8px;
+        min-height: 80px;
+    }
+
+    .month-day-number {
+        font-size: 1em;
+        margin-bottom: 5px;
+    }
+
+    .month-day-header {
+        padding: 10px 5px;
+        font-size: 0.9em;
+    }
+
+    .month-task-badge {
+        font-size: 0.7em;
+        padding: 2px 5px;
+        text-align: center;
+    }
 }
 
 @media (max-width: 480px) {
@@ -897,6 +923,27 @@ body {
 
     .week-info {
         min-width: auto;
+    }
+
+    /* Preserve 7 columns for month view but make it very small */
+    .month-day-header {
+        font-size: 0.75em;
+        padding: 8px 2px;
+    }
+
+    .month-day {
+        padding: 5px;
+        min-height: 60px;
+    }
+
+    .month-day-number {
+        font-size: 0.9em;
+    }
+
+    .month-task-badge {
+        font-size: 0.6em;
+        padding: 2px 4px;
+        /* Optionally hide text and just show dot if needed, but text gives context */
     }
 }
 
